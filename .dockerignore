@@ -1,0 +1,7 @@
+.venv
+.idea
+db.docker-compse.yml
+README.md
+test_main.http
+.env.example
+.env
