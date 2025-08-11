@@ -2,8 +2,9 @@
 
 A simple url shortener service
 
-## 
+a project from roadmap.sh
 
+https://roadmap.sh/projects/url-shortening-service
 ## Run
 
 ### docker compose
