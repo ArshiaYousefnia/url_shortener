@@ -1,7 +1,12 @@
 .venv
 .idea
 db.docker-compse.yml
+docker-compose.yml
 README.md
 test_main.http
 .env.example
 .env
+Dockerfile
+.gitignore
+.git
+.dockerignore
