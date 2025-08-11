@@ -1,19 +1,16 @@
 from datetime import datetime
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from fastapi import APIRouter, HTTPException, status
+from sqlmodel import select
 
+from models.session import SessionDep
 from models.short_url import ShortURLCreate, ShortURL, ShortURLPublic, ShortURLStats
 import secrets
-
-from models.session import get_session
-
-SessionDep = Annotated[Session, Depends(get_session)]
 
 router = APIRouter(
     prefix="/shorten"
 )
+
 
 def get_short_url_from_db(short_code: str, session: SessionDep) -> ShortURL:
     short = session.exec(select(ShortURL).where(ShortURL.short_code == short_code)).first()
@@ -22,7 +19,8 @@ def get_short_url_from_db(short_code: str, session: SessionDep) -> ShortURL:
 
     return short
 
-@router.post("/", response_model=ShortURLPublic)
+
+@router.post("/", response_model=ShortURLPublic, status_code=status.HTTP_201_CREATED)
 async def create_short_url(data: ShortURLCreate, session: SessionDep):
     existing = session.exec(select(ShortURL).where(ShortURL.url == str(data.url))).first()
     if existing:
@@ -41,6 +39,7 @@ async def create_short_url(data: ShortURLCreate, session: SessionDep):
 
     return new_short_url
 
+
 @router.get("/{short_code}", response_model=ShortURLPublic)
 async def get_short_url(short_code: str, session: SessionDep):
     short = get_short_url_from_db(short_code, session)
@@ -52,11 +51,12 @@ async def get_short_url(short_code: str, session: SessionDep):
 
     return short
 
+
 @router.put("/{short_code}", response_model=ShortURLPublic)
 async def update_short_url(data: ShortURLCreate, session: SessionDep, short_code: str):
     short = get_short_url_from_db(short_code, session)
 
-    short.url = data.url
+    short.url = str(data.url)
     short.updated_at = datetime.now()
 
     session.add(short)
@@ -65,12 +65,14 @@ async def update_short_url(data: ShortURLCreate, session: SessionDep, short_code
 
     return short
 
-@router.delete("/{short_code}", status_code=204)
+
+@router.delete("/{short_code}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_short_url(short_code: str, session: SessionDep):
     short = get_short_url_from_db(short_code, session)
 
     session.delete(short)
     session.commit()
+
 
 @router.get("/{short_code}/stats", response_model=ShortURLStats)
 async def get_short_url_stats(short_code: str, session: SessionDep):

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from models import session
 
-import routers.short_urls
+from routers import shorten, redirect
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -13,4 +13,5 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(router=routers.short_urls.router)
+app.include_router(router=shorten.router)
+app.include_router(router=redirect.router)
